@@ -2,10 +2,19 @@
 services:
   postgres:
     image: postgres:18-alpine
-    container_name: starta_postgres
+    container_name: strata_postgres
     restart: unless-stopped
 
     environment:
-      POSTGRES_USER: starta
-      POSTGRES_PASSWORD: starta_dev
-      POSTGRES_DB: starta_db
+      POSTGRES_USER: strata
+      POSTGRES_PASSWORD: strata_dev
+      POSTGRES_DB: strata_db
+    
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:
