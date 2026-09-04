@@ -7,18 +7,16 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Connect() (*pgxpool.Pool, error){
-	dsn := "postgres://strata:strata_dev@localhost:5432/strata_db"
+func Connect(databaseURL string) (*pgxpool.Pool, error) {
 
-	pool,err := pgxpool.New(context.Background(),dsn) 
-	if err != nil{
-		return nil, fmt.Errorf("Creating Database Connection pool: %w", err)
+	pool, err := pgxpool.New(context.Background(), databaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("creating database pool: %w", err)
 	}
 
-	err = pool.Ping(context.Background())
-	if err != nil{
+	if err := pool.Ping(context.Background()); err != nil {
 		pool.Close()
-		return nil, fmt.Errorf("creating Database Connection pool: %w", err)
+		return nil, fmt.Errorf("connecting to database: %w", err)
 	}
 
 	return pool, nil

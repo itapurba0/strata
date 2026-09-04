@@ -3,21 +3,23 @@ package organization
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
-type Handler struct{
+type Handler struct {
 	service *Service
 }
 
-func NewHandler(service *Service) *Handler{
+func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
-type createOrganizationRequest struct{
+
+type createOrganizationRequest struct {
 	Name string `json:"name"`
 }
 
-
-func (h *Handler) Create(w http.ResponseWriter, r *http.Request){
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var request createOrganizationRequest
 
 	err := json.NewDecoder(r.Body).Decode(&request)
@@ -34,5 +36,24 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request){
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(organization)
+}
+
+func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
+	idString := r.PathValue("id")
+
+	id, err := uuid.Parse(idString)
+	if err != nil {
+		http.Error(w, "Invalid organization ID", http.StatusBadRequest)
+		return
+	}
+
+	organization, err := h.service.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(organization)
 }

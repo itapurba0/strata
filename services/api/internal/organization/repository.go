@@ -16,15 +16,15 @@ type Organization struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type Repository struct{
+type Repository struct {
 	db *pgxpool.Pool
 }
 
-func NewRepository(db *pgxpool.Pool) *Repository{
+func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) Create(ctx context.Context, name string) (*Organization, error){
+func (r *Repository) Create(ctx context.Context, name string) (*Organization, error) {
 	id := uuid.New()
 
 	var organization Organization
@@ -41,9 +41,35 @@ func (r *Repository) Create(ctx context.Context, name string) (*Organization, er
 		&organization.UpdatedAt,
 	)
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
-	return &organization,nil;
+	return &organization, nil
+}
+
+func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*Organization, error) {
+
+	var organization Organization
+
+	err := r.db.QueryRow(
+		ctx,
+		`
+		SELECT id, name,created_at, updated_at
+		FROM organizations
+		WHERE id = $1
+		`,
+		id,
+	).Scan(
+		&organization.ID,
+		&organization.Name,
+		&organization.CreatedAt,
+		&organization.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &organization, nil
 }
