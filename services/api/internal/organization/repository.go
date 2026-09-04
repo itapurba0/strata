@@ -3,15 +3,17 @@ package organization
 import (
 	"context"
 
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Organization struct {
-	ID         uuid.UUID
-	Name       string
-	CreatedAt  string
-	UpdatedAt  string
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Repository struct{

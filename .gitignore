@@ -1,0 +1,6 @@
+# Go
+bin/
+*.test
+
+# Environment
+.env
