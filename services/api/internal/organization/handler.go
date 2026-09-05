@@ -50,7 +50,7 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	organization, err := h.service.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Organization not found", http.StatusNotFound)
 		return
 	}
 
