@@ -1,0 +1,62 @@
+package user
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/google/uuid"
+)
+
+type CreateUserInput struct {
+	Email    string
+	Name     string
+	Password string
+}
+
+type Service struct {
+	repository *Repository
+}
+
+func NewService(repository *Repository) *Service {
+	return &Service{
+		repository: repository,
+	}
+}
+
+func (s *Service) Create(ctx context.Context, input CreateUserInput) (*User, error) {
+	input.Email = strings.TrimSpace(input.Email)
+
+	if input.Email == "" {
+		return nil, fmt.Errorf("user email cannot be empty")
+	}
+
+	if len(input.Email) > 100 {
+		return nil, fmt.Errorf("user email cannot exceed 100 characters")
+	}
+
+	input.Name = strings.TrimSpace(input.Name)
+
+	if input.Name == "" {
+		return nil, fmt.Errorf("user name cannot be empty")
+	}
+
+	if len(input.Name) > 100 {
+		return nil, fmt.Errorf("user name cannot exceed 100 characters")
+	}
+
+	if input.Password == "" {
+		return nil, fmt.Errorf("user password cannot be empty")
+	}
+
+	user := &User{
+		ID:    uuid.New(),
+		Email: input.Email,
+		Name:  input.Name,
+	}
+
+	// Password hashing will go here.
+	// user.PasswordHash = ...
+
+	return s.repository.Create(ctx, user)
+}
