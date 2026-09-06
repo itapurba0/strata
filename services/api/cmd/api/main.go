@@ -34,6 +34,8 @@ func main() {
 	http.HandleFunc("/health", healthHandler)
 	http.HandleFunc("POST /api/v1/organizations", organizationHandler.Create)
 	http.HandleFunc("GET /api/v1/organizations/{id}", organizationHandler.GetByID)
+	http.HandleFunc("GET /api/v1/organizations", organizationHandler.List)
+	http.HandleFunc("PATCH /api/v1/organizations/{id}", organizationHandler.Update)
 
 	fmt.Println("STRATA API running on http://localhost:" + cfg.Port)
 
