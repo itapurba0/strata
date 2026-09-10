@@ -3,6 +3,8 @@ package user
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -17,6 +19,20 @@ type createUserRequest struct {
 	Email    string `json:"email"`
 	Name     string `json:"name"`
 	Password string `json:"password"`
+}
+
+type userResponse struct{
+	ID uuid.UUID `json:"id"`
+	Email string `json:"email"`
+	Name string `json:"name"`
+}
+
+func newUserResponse(user *User) userResponse {
+	return userResponse{
+		ID: user.ID,
+		Email: user.Email,
+		Name: user.Name,
+	}
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
@@ -38,12 +54,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	response := newUserResponse(user)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"id":    user.ID,
-		"email": user.Email,
-		"name":  user.Name,
-	})
+	json.NewEncoder(w).Encode(response)
 }
