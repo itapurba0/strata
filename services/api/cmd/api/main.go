@@ -7,6 +7,7 @@ import (
 	"github.com/itapurba0/strata/services/api/internal/config"
 	"github.com/itapurba0/strata/services/api/internal/database"
 	"github.com/itapurba0/strata/services/api/internal/organization"
+	"github.com/itapurba0/strata/services/api/internal/user"
 )
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,11 +32,17 @@ func main() {
 	organizationService := organization.NewService(organizationRepository)
 	organizationHandler := organization.NewHandler(organizationService)
 
+	userRepository := user.NewRepository(db)
+	userService := user.NewService(userRepository)
+	userHandler := user.NewHandler(userService)
+
 	http.HandleFunc("/health", healthHandler)
 	http.HandleFunc("POST /api/v1/organizations", organizationHandler.Create)
 	http.HandleFunc("GET /api/v1/organizations/{id}", organizationHandler.GetByID)
 	http.HandleFunc("GET /api/v1/organizations", organizationHandler.List)
 	http.HandleFunc("PATCH /api/v1/organizations/{id}", organizationHandler.Update)
+
+	http.HandleFunc("POST /api/v1/users", userHandler.Create)
 
 	fmt.Println("STRATA API running on http://localhost:" + cfg.Port)
 
