@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type CreateUserInput struct {
@@ -55,7 +56,15 @@ func (s *Service) Create(ctx context.Context, input CreateUserInput) (*User, err
 		Name:  input.Name,
 	}
 
-	// Password hashing will go here.
+	passwordHash, err := bcrypt.GenerateFromPassword(
+		[]byte(input.Password),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	user.PasswordHash = string(passwordHash)
 	// user.PasswordHash = ...
 
 	return s.repository.Create(ctx, user)
