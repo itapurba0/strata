@@ -21,17 +21,17 @@ type createUserRequest struct {
 	Password string `json:"password"`
 }
 
-type userResponse struct{
-	ID uuid.UUID `json:"id"`
-	Email string `json:"email"`
-	Name string `json:"name"`
+type userResponse struct {
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+	Name  string    `json:"name"`
 }
 
 func newUserResponse(user *User) userResponse {
 	return userResponse{
-		ID: user.ID,
+		ID:    user.ID,
 		Email: user.Email,
-		Name: user.Name,
+		Name:  user.Name,
 	}
 }
 
