@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -51,8 +52,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+    	if errors.Is(err, ErrEmailExists) {
+        	http.Error(w, ErrEmailExists.Error(), http.StatusConflict)
+        	return
+    	}
+
+    	http.Error(w, err.Error(), http.StatusBadRequest)
+    	return
 	}
 	response := newUserResponse(user)
 

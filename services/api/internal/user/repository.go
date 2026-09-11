@@ -2,9 +2,11 @@ package user
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -24,6 +26,8 @@ type Repository struct {
 func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
+
+var ErrEmailExists = errors.New("user with this email already exists")
 
 func (r *Repository) Create(ctx context.Context, user *User) (*User, error) {
 	var createdUser User
@@ -47,8 +51,12 @@ func (r *Repository) Create(ctx context.Context, user *User) (*User, error) {
 		&createdUser.CreatedAt,
 		&createdUser.UpdatedAt,
 	)
-
 	if err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+    		return nil, ErrEmailExists
+		}
 		return nil, err
 	}
 
