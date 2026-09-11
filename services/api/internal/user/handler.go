@@ -52,17 +52,41 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-    	if errors.Is(err, ErrEmailExists) {
-        	http.Error(w, ErrEmailExists.Error(), http.StatusConflict)
-        	return
-    	}
+		if errors.Is(err, ErrEmailExists) {
+			http.Error(w, ErrEmailExists.Error(), http.StatusConflict)
+			return
+		}
 
-    	http.Error(w, err.Error(), http.StatusBadRequest)
-    	return
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	response := newUserResponse(user)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
+}
+
+func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
+	idString := r.PathValue("id")
+
+	id, err := uuid.Parse(idString)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.service.GetByID(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			http.Error(w, ErrNotFound.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(newUserResponse(user))
+
 }

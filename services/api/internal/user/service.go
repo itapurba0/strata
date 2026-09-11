@@ -65,7 +65,15 @@ func (s *Service) Create(ctx context.Context, input CreateUserInput) (*User, err
 	}
 
 	user.PasswordHash = string(passwordHash)
-	// user.PasswordHash = ...
 
 	return s.repository.Create(ctx, user)
+}
+
+func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
+
+	if id == uuid.Nil {
+		return nil, fmt.Errorf("invalid user ID")
+	}
+
+	return s.repository.GetByID(ctx, id)
 }

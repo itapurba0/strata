@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -28,6 +29,7 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 }
 
 var ErrEmailExists = errors.New("user with this email already exists")
+var ErrNotFound = errors.New("User not found")
 
 func (r *Repository) Create(ctx context.Context, user *User) (*User, error) {
 	var createdUser User
@@ -55,10 +57,37 @@ func (r *Repository) Create(ctx context.Context, user *User) (*User, error) {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-    		return nil, ErrEmailExists
+			return nil, ErrEmailExists
 		}
 		return nil, err
 	}
 
 	return &createdUser, nil
+}
+
+func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
+	var user User
+
+	err := r.db.QueryRow(
+		ctx,
+		`SELECT id, email, name, created_at, updated_at
+		FROM users
+		where id = $1
+		`,
+		id,
+	).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Name,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &user, nil
 }
