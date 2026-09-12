@@ -8,7 +8,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
 type Service struct {
 	userRepository *user.Repository
 }
@@ -19,11 +18,10 @@ func NewService(userRepository *user.Repository) *Service {
 	}
 }
 
-type LoginInput struct{
+type LoginInput struct {
 	Email    string
 	Password string
 }
-
 
 var ErrInvalidCredentials = errors.New("invalid email or password")
 
@@ -37,7 +35,7 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (*user.User, erro
 		return nil, err
 	}
 	err = bcrypt.CompareHashAndPassword(
-		[]byte(foundUser.PasswordHash), 
+		[]byte(foundUser.PasswordHash),
 		[]byte(input.Password),
 	)
 	if err != nil {
@@ -45,5 +43,5 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (*user.User, erro
 	}
 
 	return foundUser, nil
-	
+
 }
