@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/itapurba0/strata/services/api/internal/auth"
 	"github.com/itapurba0/strata/services/api/internal/config"
 	"github.com/itapurba0/strata/services/api/internal/database"
 	"github.com/itapurba0/strata/services/api/internal/organization"
 	"github.com/itapurba0/strata/services/api/internal/user"
-	"github.com/itapurba0/strata/services/api/internal/auth"
 )
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +37,7 @@ func main() {
 	userService := user.NewService(userRepository)
 	userHandler := user.NewHandler(userService)
 
-	authService := auth.NewService(userRepository)
+	authService := auth.NewService(userRepository, cfg.JWTSecret)
 	authHandler := auth.NewHandler(authService)
 
 	http.HandleFunc("/health", healthHandler)

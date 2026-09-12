@@ -26,6 +26,10 @@ type userResponse struct {
 	Email string    `json:"email"`
 	Name  string    `json:"name"`
 }
+type loginResponse struct {
+	Token string       `json:"token"`
+	User  userResponse `json:"user"`
+}
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var request loginRequest
@@ -49,11 +53,15 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := userResponse{
-		ID:    user.ID,
-		Email: user.Email,
-		Name:  user.Name,
+	response := loginResponse{
+		Token: user.Token,
+		User: userResponse{
+			ID:    user.User.ID,
+			Email: user.User.Email,
+			Name:  user.User.Name,
+		},
 	}
+
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
