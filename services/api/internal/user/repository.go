@@ -91,3 +91,32 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
 
 	return &user, nil
 }
+
+func (r *Repository) GetByEmail(ctx context.Context, email string) (*User, error) {
+	var user User
+	
+	err := r.db.QueryRow(
+		ctx,
+		`SELECT id, email, name, password_hash, created_at, updated_at
+		FROM users
+		WHERE email = $1
+		`,
+		email,
+	).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Name,
+		&user.PasswordHash,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &user, nil
+
+}

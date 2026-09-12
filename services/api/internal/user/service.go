@@ -77,3 +77,18 @@ func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
 
 	return s.repository.GetByID(ctx, id)
 }
+
+func (s *Service) GetByEmail(ctx context.Context, email string) (*User, error) {
+	email = strings.TrimSpace(email)
+
+	if email == "" {
+		return nil, fmt.Errorf("user email cannot be empty")
+	}
+
+	if len(email) > 100 {
+		return nil, fmt.Errorf("user email cannot exceed 100 characters")
+	}
+
+
+	return s.repository.GetByEmail(ctx, email)
+}
