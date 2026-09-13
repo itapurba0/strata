@@ -50,6 +50,10 @@ func main() {
 	http.HandleFunc("GET /api/v1/organizations/{id}", organizationHandler.GetByID)
 	http.HandleFunc("GET /api/v1/organizations", organizationHandler.List)
 	http.HandleFunc("PATCH /api/v1/organizations/{id}", organizationHandler.Update)
+	http.Handle(
+    	"POST /api/v1/organizations",
+    	authMiddleware.Middleware(http.HandlerFunc(organizationHandler.CreateOrganization)),
+	)
 
 	http.HandleFunc("POST /api/v1/users", userHandler.Create)
 	http.HandleFunc("GET /api/v1/users/{id}", userHandler.GetByID)

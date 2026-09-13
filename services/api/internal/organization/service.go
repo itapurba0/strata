@@ -7,14 +7,21 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Service struct {
-	repository *Repository
+	repository     *Repository
+	membershipRepo *MembershipRepository
+	db             *pgxpool.Pool
 }
 
 func NewService(repository *Repository) *Service {
 	return &Service{repository: repository}
+}
+
+type CreateOrganizationInput struct {
+	Name string `json:"name"`
 }
 
 func (s *Service) Create(ctx context.Context, name string) (*Organization, error) {
@@ -62,4 +69,32 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, name string) (*Organ
 	}
 
 	return s.repository.Update(ctx, id, name)
+}
+
+func (s *Service) CreateOrganization(ctx context.Context, userID uuid.UUID, name string) (*Organization, error) {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback(ctx)
+
+	organizationRepo := &Repository{db: tx}
+	membershipRepo := &MembershipRepository{db: tx}
+
+	organization, err := organizationRepo.Create(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = membershipRepo.Create(ctx, organization.ID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	return organization, nil
 }

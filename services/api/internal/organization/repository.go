@@ -18,11 +18,16 @@ type Organization struct {
 }
 
 type Repository struct {
-	db *pgxpool.Pool
+	db DBTX
 }
 
 func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
+}
+
+type DBTX interface {
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
 var ErrNotFound = errors.New("organization not found")

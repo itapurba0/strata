@@ -5,8 +5,10 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
+	"github.com/itapurba0/strata/services/api/internal/middleware"
 )
 
 type Handler struct {
@@ -143,5 +145,36 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(organization)
+}
+
+
+func (h *Handler) CreateOrganization(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.UserIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "User ID not found in context", http.StatusUnauthorized)
+		return
+	}
+	var input createOrganizationRequest
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)	
+		return
+	}
+	input.Name = strings.TrimSpace(input.Name)
+	if input.Name == "" {
+		http.Error(w, "Organization name cannot be empty", http.StatusBadRequest)
+		return
+	}
+	if len(input.Name) > 100 {
+		http.Error(w, "Organization name cannot exceed 100 characters", http.StatusBadRequest)
+		return
+	}
+	organization, err := h.service.CreateOrganization(r.Context(),userID, input.Name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(organization)
 }

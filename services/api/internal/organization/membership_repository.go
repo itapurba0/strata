@@ -9,7 +9,7 @@ import (
 )
 
 type MembershipRepository struct {
-	db *pgxpool.Pool
+	db DBTX
 }
 
 func NewMembershipRepository(db *pgxpool.Pool) *MembershipRepository {
@@ -18,7 +18,7 @@ func NewMembershipRepository(db *pgxpool.Pool) *MembershipRepository {
 
 var ErrMembershipNotFound = errors.New("membership not found")
 
-func (r *MembershipRepository) Create(ctx context.Context, organizationID, userID uuid.UUID) (*Membership, error){
+func (r *MembershipRepository) Create(ctx context.Context, organizationID, userID uuid.UUID) (*Membership, error) {
 	var membership Membership
 	err := r.db.QueryRow(
 		ctx,
@@ -43,4 +43,3 @@ func (r *MembershipRepository) Create(ctx context.Context, organizationID, userI
 
 	return &membership, nil
 }
-		
