@@ -16,8 +16,16 @@ type Service struct {
 	db             *pgxpool.Pool
 }
 
-func NewService(repository *Repository) *Service {
-	return &Service{repository: repository}
+func NewService(
+    repository *Repository,
+    membershipRepo *MembershipRepository,
+    db *pgxpool.Pool,
+) *Service {
+    return &Service{
+        repository:     repository,
+        membershipRepo: membershipRepo,
+        db:             db,
+    }
 }
 
 type CreateOrganizationInput struct {

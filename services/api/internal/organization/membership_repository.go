@@ -22,7 +22,7 @@ func (r *MembershipRepository) Create(ctx context.Context, organizationID, userI
 	var membership Membership
 	err := r.db.QueryRow(
 		ctx,
-		`INSERT INTO organization-memberships
+		`INSERT INTO organization_memberships
 		(organization_id, user_id)
 		VALUES ($1, $2)
 		RETURNING id, organization_id, user_id, status, created_at, updated_at`,

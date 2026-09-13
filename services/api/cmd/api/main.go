@@ -32,9 +32,9 @@ func main() {
 
 	// Initialize the authentication middleware
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWTSecret)
-
+	membershipRepository := organization.NewMembershipRepository(db)
 	organizationRepository := organization.NewRepository(db)
-	organizationService := organization.NewService(organizationRepository)
+	organizationService := organization.NewService(organizationRepository,membershipRepository, db)
 	organizationHandler := organization.NewHandler(organizationService)
 
 	userRepository := user.NewRepository(db)
@@ -46,7 +46,7 @@ func main() {
 	authHandler := auth.NewHandler(authService)
 
 	http.HandleFunc("/health", healthHandler)
-	http.HandleFunc("POST /api/v1/organizations", organizationHandler.Create)
+	// http.HandleFunc("POST /api/v1/organizations", organizationHandler.Create)
 	http.HandleFunc("GET /api/v1/organizations/{id}", organizationHandler.GetByID)
 	http.HandleFunc("GET /api/v1/organizations", organizationHandler.List)
 	http.HandleFunc("PATCH /api/v1/organizations/{id}", organizationHandler.Update)
@@ -74,3 +74,7 @@ func main() {
 		fmt.Println("Server failed:", err)
 	}
 }
+
+
+
+
