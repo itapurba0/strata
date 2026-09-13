@@ -36,6 +36,7 @@ func main() {
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
 	userHandler := user.NewHandler(userService)
+	
 
 	authService := auth.NewService(userRepository, cfg.JWTSecret)
 	authHandler := auth.NewHandler(authService)

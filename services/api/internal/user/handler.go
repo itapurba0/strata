@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/itapurba0/strata/services/api/internal/middleware"
 )
 
 type Handler struct {
@@ -77,6 +78,28 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := h.service.GetByID(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			http.Error(w, ErrNotFound.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(newUserResponse(user))
+
+}
+
+func (h *Handler) Me(w http.ResponseWriter, r *http.Request){
+	UserID, ok := middleware.UserIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "User ID not found in context", http.StatusUnauthorized)
+		return
+	}
+
+	user, err := h.service.GetByID(r.Context(), UserID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			http.Error(w, ErrNotFound.Error(), http.StatusNotFound)

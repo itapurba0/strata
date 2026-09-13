@@ -8,7 +8,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/itapurba0/strata/services/api/internal/auth"
 )
 
 type AuthMiddleware struct {
@@ -41,7 +40,7 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 			http.Error(w, "Missing token", http.StatusUnauthorized)
 			return
 		}
-		claims := &auth.Claims{}
+		claims := &jwt.RegisteredClaims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			tokenMethod, ok := token.Method.(*jwt.SigningMethodHMAC)
 			if !ok || tokenMethod != jwt.SigningMethodHS256 {
