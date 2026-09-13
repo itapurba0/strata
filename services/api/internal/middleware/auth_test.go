@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/itapurba0/strata/services/api/internal/auth"
 	"github.com/itapurba0/strata/services/api/internal/middleware"
@@ -106,6 +108,51 @@ func TestAuthMiddleware_WrongSecret(t *testing.T) {
 	)
 
 	req.Header.Set("Authorization", "Bearer "+token)
+
+	rec := httptest.NewRecorder()
+
+	handler := authMiddleware.Middleware(nextHandler)
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected status 401, got %d", rec.Code)
+	}
+}
+
+
+func TestAuthMiddleware_ExpiredToken(t *testing.T) {
+	secretKey := "test-secret-key"
+	userID := uuid.New()
+
+	now := time.Now()
+
+	claims := &jwt.RegisteredClaims{
+		Subject:   userID.String(),
+		IssuedAt:  jwt.NewNumericDate(now.Add(-2 * time.Hour)),
+		ExpiresAt: jwt.NewNumericDate(now.Add(-1 * time.Hour)),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		t.Fatalf("failed to sign token: %v", err)
+	}
+
+	authMiddleware := middleware.NewAuthMiddleware(secretKey)
+
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Fatal("next handler should not be called for expired token")
+	})
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/api/v1/users/me",
+		nil,
+	)
+
+	req.Header.Set("Authorization", "Bearer "+tokenString)
 
 	rec := httptest.NewRecorder()
 

@@ -1,0 +1,3 @@
+DROP TABLE organization_memberships;
+
+DROP TYPE organization_membership_status;
