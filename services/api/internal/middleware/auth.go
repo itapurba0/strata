@@ -71,3 +71,8 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func UserIDFromContext(ctx context.Context) (uuid.UUID, bool) {
+    id, ok := ctx.Value(userIDKey).(uuid.UUID)
+    return id, ok
+}
