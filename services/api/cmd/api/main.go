@@ -34,7 +34,9 @@ func main() {
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWTSecret)
 	membershipRepository := organization.NewMembershipRepository(db)
 	organizationRepository := organization.NewRepository(db)
-	organizationService := organization.NewService(organizationRepository,membershipRepository, db)
+	membershipRoleRepository := organization.NewMembershipRoleRepository(db)
+	roleRepository := organization.NewRoleRepository(db)
+	organizationService := organization.NewService(organizationRepository,	membershipRepository, membershipRoleRepository, roleRepository, db,)
 	organizationHandler := organization.NewHandler(organizationService)
 
 	userRepository := user.NewRepository(db)

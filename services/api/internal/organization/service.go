@@ -11,21 +11,27 @@ import (
 )
 
 type Service struct {
-	repository     *Repository
-	membershipRepo *MembershipRepository
-	db             *pgxpool.Pool
+	repository         *Repository
+	membershipRepo     *MembershipRepository
+	membershipRoleRepo *MembershipRoleRepository
+	roleRepo           *RoleRepository
+	db                 *pgxpool.Pool
 }
 
 func NewService(
-    repository *Repository,
-    membershipRepo *MembershipRepository,
-    db *pgxpool.Pool,
+	repository *Repository,
+	membershipRepo *MembershipRepository,
+	membershipRoleRepo *MembershipRoleRepository,
+	roleRepo *RoleRepository,
+	db *pgxpool.Pool,
 ) *Service {
-    return &Service{
-        repository:     repository,
-        membershipRepo: membershipRepo,
-        db:             db,
-    }
+	return &Service{
+		repository:         repository,
+		membershipRepo:     membershipRepo,
+		membershipRoleRepo: membershipRoleRepo,
+		roleRepo:           roleRepo,
+		db:                 db,
+	}
 }
 
 type CreateOrganizationInput struct {

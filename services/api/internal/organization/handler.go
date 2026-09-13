@@ -148,7 +148,6 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(organization)
 }
 
-
 func (h *Handler) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.UserIDFromContext(r.Context())
 	if !ok {
@@ -157,7 +156,7 @@ func (h *Handler) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	}
 	var input createOrganizationRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)	
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 	input.Name = strings.TrimSpace(input.Name)
@@ -169,7 +168,7 @@ func (h *Handler) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Organization name cannot exceed 100 characters", http.StatusBadRequest)
 		return
 	}
-	organization, err := h.service.CreateOrganization(r.Context(),userID, input.Name)
+	organization, err := h.service.CreateOrganization(r.Context(), userID, input.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
