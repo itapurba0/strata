@@ -7,6 +7,7 @@ import (
 	"github.com/itapurba0/strata/services/api/internal/auth"
 	"github.com/itapurba0/strata/services/api/internal/config"
 	"github.com/itapurba0/strata/services/api/internal/database"
+	"github.com/itapurba0/strata/services/api/internal/middleware"
 	"github.com/itapurba0/strata/services/api/internal/organization"
 	"github.com/itapurba0/strata/services/api/internal/user"
 )
@@ -29,6 +30,9 @@ func main() {
 	}
 	defer db.Close()
 
+	// Initialize the authentication middleware
+	authMiddleware := middleware.NewAuthMiddleware(cfg.JWTSecret)
+
 	organizationRepository := organization.NewRepository(db)
 	organizationService := organization.NewService(organizationRepository)
 	organizationHandler := organization.NewHandler(organizationService)
@@ -49,8 +53,15 @@ func main() {
 
 	http.HandleFunc("POST /api/v1/users", userHandler.Create)
 	http.HandleFunc("GET /api/v1/users/{id}", userHandler.GetByID)
+	http.Handle(
+    "GET /api/v1/users/me",
+    authMiddleware.Middleware(http.HandlerFunc(userHandler.Me)),
+	)
+
 
 	http.HandleFunc("POST /api/v1/auth/login", authHandler.Login)
+
+
 
 	fmt.Println("STRATA API running on http://localhost:" + cfg.Port)
 
