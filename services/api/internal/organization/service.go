@@ -85,29 +85,63 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, name string) (*Organ
 	return s.repository.Update(ctx, id, name)
 }
 
-func (s *Service) CreateOrganization(ctx context.Context, userID uuid.UUID, name string) (*Organization, error) {
+func (s *Service) CreateOrganization(
+	ctx context.Context,
+	userID uuid.UUID,
+	name string,
+) (*Organization, error) {
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer tx.Rollback(ctx)
 
 	organizationRepo := &Repository{db: tx}
 	membershipRepo := &MembershipRepository{db: tx}
+	membershipRoleRepo := &MembershipRoleRepository{db: tx}
+	roleRepo := &RoleRepository{db: tx}
 
 	organization, err := organizationRepo.Create(ctx, name)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = membershipRepo.Create(ctx, organization.ID, userID)
+	membership, err := membershipRepo.Create(
+		ctx,
+		organization.ID,
+		userID,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Commit(ctx); err != nil {
+	adminRole, err := roleRepo.GetSystemRoleByName(
+		ctx,
+		"Organization Admin",
+	)
+	if err != nil {
 		return nil, err
+	}
+
+	if err := membershipRoleRepo.Assign(
+		ctx,
+		membership.ID,
+		adminRole.ID,
+	); err != nil {
+		return nil, err
+	}
+
+	if err := membershipRepo.UpdateStatus(
+		ctx,
+		membership.ID,
+		MembershipActive,
+	); err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit organization creation: %w", err)
 	}
 
 	return organization, nil

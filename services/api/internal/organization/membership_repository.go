@@ -3,6 +3,7 @@ package organization
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -42,4 +43,22 @@ func (r *MembershipRepository) Create(ctx context.Context, organizationID, userI
 	}
 
 	return &membership, nil
+}
+
+func (r *MembershipRepository) UpdateStatus(ctx context.Context, membershipID uuid.UUID, status MembershipStatus) error {
+	_, err := r.db.Exec(
+		ctx,
+		`UPDATE organization_memberships
+		 SET status = $1,
+		     updated_at = NOW()
+		 WHERE id = $2`,
+		status,
+		membershipID,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to update membership status: %w", err)
+	}
+
+	return nil
 }
